@@ -6,7 +6,7 @@
 // Set the default values
 UGrid::UGrid()
 {
-	CenterLocation = FVector(0, 0, 0);
+	GridCenterLocation = FVector(0, 0, 0);
 
 	bIsValid = true;
 	bIsHidden = false;

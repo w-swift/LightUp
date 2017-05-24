@@ -5,9 +5,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Grid.generated.h"
 
-/**
- * A grid is a basic cell of a room. Used for generate the path and merge or convert to a specify room.
- */
+/** A grid is a basic cell of a room. Used for generate the path and merge or convert to a specify room. */
 UCLASS()
 class LIGHTUP_API UGrid : public UObject
 {
@@ -47,36 +45,36 @@ public:
 
 
 public:
-	// The center location of a grid, used to spawn rooms later.
+	/** The center location of a grid, used to spawn rooms later. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
-	FVector CenterLocation;
+	FVector GridCenterLocation;
 
-	// Whether the grid is in hidden room.
+	/** Whether the grid is in hidden room. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
-	bool bIsValid;
+	uint8 bIsValid:1;
 
-	// Whether the grid is in hidden room.
+	/** Whether the grid is in hidden room. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
-	bool bIsHidden;
+	uint8 bIsHidden:1;
 
-	// The X index in the original hilbert curve.
+	/** The X index in the original hilbert curve. */
 	int8 GridIndexX;
 
-	// The Y index in the original hilbert curve.
+	/** The Y index in the original hilbert curve. */
 	int8 GridIndexY;
 
-	// The origin index of the grid in Hilbert Curve. Count from 0.
+	/** The origin index of the grid in Hilbert Curve. Count from 0. */
 	int8 HilbertIndex;
 
-	// The previous grid in room path.
+	/** The previous grid in room path. */
 	UGrid* PreviousGrid;
 
-	// The next grid in room path.
+	/** The next grid in room path. */
 	UGrid* NextGrid;
 
-	// The cross grid of this grid in room path. If some grids are disabled, there may create cross road to be a alternative way to go, but cross road usually lead a dead ending path, unless the last grid of a cross road connect a previous grid which means this path become looping.
+	/** The cross grid of this grid in room path. If some grids are disabled, there may create cross road to be a alternative way to go, but cross road usually lead a dead ending path, unless the last grid of a cross road connect a previous grid which means this path become looping. */
 	UGrid* CrossGrid;
 
-	// The isolate grid of this grid in room path. When a grid only has one direction as a choice to connect, it becomes a isolate grid of that grid.
+	/** The isolate grid of this grid in room path. When a grid only has one direction as a choice to connect, it becomes a isolate grid of that grid. */
 	UGrid* IsolateGrid;
 };

@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "PathGenerator.generated.h"
 
-// four direction enum, used for rotate the U shape of the Hilbert Curve.
+/** four direction enum, used for rotate the U shape of the Hilbert Curve. */
 UENUM(BlueprintType)
 enum class EDirection : uint8
 {
@@ -27,40 +27,21 @@ class LIGHTUP_API UPathGenerator : public UObject
 	GENERATED_BODY()
 	
 public:
-	/**
-	* Default Constructor.
-	*/
 	UPathGenerator();
 
-	/**
-	* Constructor with given seed.
-	* @param NewSeed Initialize seed to the give seed value.
-	*/
-	UPathGenerator(uint32 NewSeed);
+	/** Constructor with given seed. **/
+	UPathGenerator(const uint32 & InSeed);
 
-	/**
-	* Generate a random seed for generating path.
-	*/
-	uint32 GenerateSeed();
+	/** Return original hilbert path. **/
+	FORCEINLINE TArray<UGrid*> GetHilbertPath() const { return ArrayHilbertPath; }
 
-	/**
-	* Get original hilbert path.
-	*/
-	const TArray<UGrid*> GetHilbertPath();
+	/** Return rearranged main path. **/
+	FORCEINLINE TArray<UGrid*> GetMainPath() const { return ArrayMainPath; }
 
-	/**
-	* Get rearranged main path.
-	*/
-	const TArray<UGrid*> GetMainPath();
+	/** Return hidden path array. Return null when there is no hiiden path. **/
+	FORCEINLINE TArray<UGrid*> GetHiddenPath() const { return ArrayHiddenPath; }
 
-	/**
-	* Get hidden path array. Return null when there is no hiiden path.
-	*/
-	const TArray<UGrid*> GetHiddenPath();
-
-	/**
-	* Integration of all path generation functions. Call other functions to get the final path.
-	*/
+	/** Integration of all path generation functions. Call other functions to get the final path. */
 	void GeneratePath();
 
 private:
@@ -100,9 +81,7 @@ private:
 	*/
 	uint8 DisableGrid();
 
-	/**
-	* Seperate the hidden path into two hidden path when current disabled grid is in hidden path. And change the CurrentDisabledGridOrder.
-	*/
+	/** Seperate the hidden path into two hidden path when current disabled grid is in hidden path. And change the CurrentDisabledGridOrder. */
 	void SeperateHiddenPath();
 
 	/**
@@ -112,11 +91,10 @@ private:
 	void RearrangeDisabledGrid(UGrid ArrayHilbertGrid[8][8]);
 
 	/**
-	*
 	* Add given grid to ArrayHiddenPath, and set the bIsHidden of followed grids to true.
 	* @param HiddenGrid The grid to be added to ArrayHiddenPath.
 	*/
-	void AddHiddenPath(TArray<UGrid*>& ArrayHiddenPath, UGrid* HiddenGrid);
+	void AddHiddenPath(UGrid* HiddenGrid);
 	/**
 	* Inverse order of the given grid and its pre valid grids.
 	* @param Grid The first grid to be inversed. Always the first grid of a cross path.
@@ -146,34 +124,34 @@ private:
 	void RecalculateMainPath(UGrid* FirstGrid);
 
 public:
-	// Use seed to generate random path. Can be changed by LevelGameMode.
+	/** Use seed to generate random path. Can be changed by LevelGameMode. */
 	uint32 Seed;
 
-protected:
-	// The orientation of the base U shape face to.
+private:
+	/** The orientation of the base U shape face to. */
 	EDirection BaseDirection;
 
-	// The X value of current grid, represent column index, to tell GeneratePath function where to connect.
+	/** The X value of current grid, represent column index, to tell GeneratePath function where to connect. */
 	int8 CurrentGridIndexX;
 
-	// The Y value of current grid, represent the row index.
+	/** The Y value of current grid, represent the row index. */
 	int8 CurrentGridIndexY;
 
-	// The current disabled grid order in ArrayHilbertPath. Count from 0. Equals to HilbertIndex.
+	/** The current disabled grid order in ArrayHilbertPath. Count from 0. Equals to HilbertIndex. */
 	int8 CurrentDisabledGridOrder;
 
-	// Count the total number of disabled grids.
+	/** Count the total number of disabled grids. */
 	uint8 DisabledGridCounter;
 
-	// Original hilbert path.
+	/** Original hilbert path. */
 	UPROPERTY()
 	TArray<UGrid*> ArrayHilbertPath;
 
-	// The main path of rearranged ArrayHilbertPath.(Not include the cross path, which can be got from the CrossGridIndex)
+	/** The main path of rearranged ArrayHilbertPath.(Not include the cross path, which can be got from the CrossGridIndex) */
 	UPROPERTY()
 	TArray<UGrid*> ArrayMainPath;
 
-	// All hidden path of rearranged ArrayHilbertPath. Just contain the first grid index of each hidden path.
+	/** All hidden path of rearranged ArrayHilbertPath. Just contain the first grid index of each hidden path. */
 	UPROPERTY()
 	TArray<UGrid*> ArrayHiddenPath;
 };

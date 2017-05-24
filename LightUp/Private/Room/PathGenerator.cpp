@@ -6,10 +6,9 @@
 #define LEVEL 3
 #define SIZE 8
 
-// Sets default values
 UPathGenerator::UPathGenerator()
 {
-	Seed = GenerateSeed();
+	Seed = UINT32_MAX;
 
 	BaseDirection = EDirection::DE_UP;
 
@@ -20,15 +19,15 @@ UPathGenerator::UPathGenerator()
 	DisabledGridCounter = 0;
 
 	// Initialize the slack of each TArray variable.
-	ArrayHilbertPath.Empty(SIZE*SIZE);
-	ArrayMainPath.Empty(SIZE*SIZE);
-	ArrayHiddenPath.Empty(SIZE*SIZE / 2);
+	ArrayHilbertPath.Empty(SIZE * SIZE);
+	ArrayMainPath.Empty(SIZE * SIZE);
+	ArrayHiddenPath.Empty(SIZE * SIZE / 2);
 }
 
 // Sets seed to the give seed value.
-UPathGenerator::UPathGenerator(uint32 NewSeed)
+UPathGenerator::UPathGenerator(const uint32 & InSeed)
 {
-	Seed = NewSeed;
+	Seed = InSeed;
 
 	BaseDirection = EDirection::DE_UP;
 
@@ -38,29 +37,10 @@ UPathGenerator::UPathGenerator(uint32 NewSeed)
 
 	DisabledGridCounter = 0;
 
-	ArrayHilbertPath.Empty(64);
-	ArrayMainPath.Empty(64);
-	ArrayHiddenPath.Empty(32);
-}
-
-uint32 UPathGenerator::GenerateSeed()
-{
-	return FMath::RandRange(0, UINT32_MAX);
-}
-
-const TArray<UGrid*> UPathGenerator::GetHilbertPath()
-{
-	return ArrayHilbertPath;
-}
-
-const TArray<UGrid*> UPathGenerator::GetMainPath()
-{
-	return ArrayMainPath;
-}
-
-const TArray<UGrid*> UPathGenerator::GetHiddenPath()
-{
-	return ArrayHiddenPath;
+	// Initialize the slack of each TArray variable.
+	ArrayHilbertPath.Empty(SIZE * SIZE);
+	ArrayMainPath.Empty(SIZE * SIZE);
+	ArrayHiddenPath.Empty(SIZE * SIZE / 2);
 }
 
 void UPathGenerator::GeneratePath()
@@ -352,7 +332,7 @@ void UPathGenerator::RearrangeDisabledGrid(UGrid ArrayHilbertGrid[SIZE][SIZE])
 	if ((SpecialGrid = ArrayHilbertPath[CurrentDisabledGridOrder]->IsolateGrid) != nullptr)
 	{
 		SpecialGrid->PreviousGrid = nullptr;
-		AddHiddenPath(ArrayHiddenPath, SpecialGrid);
+		AddHiddenPath(SpecialGrid);
 	}
 
 	// If CurrentDisabledGrid has a cross grid, check its neighbour grid which is valid and located at the higher order in ArrayHilbertPath.
@@ -360,7 +340,7 @@ void UPathGenerator::RearrangeDisabledGrid(UGrid ArrayHilbertGrid[SIZE][SIZE])
 		ConnectAvailableGrid(SpecialGrid, ArrayHilbertGrid, false);
 }
 
-void UPathGenerator::AddHiddenPath(TArray<UGrid*>& ArrayHiddenPath, UGrid* HiddenGrid)
+void UPathGenerator::AddHiddenPath(UGrid* HiddenGrid)
 {
 	UGrid* TempGrid;
 
@@ -456,12 +436,12 @@ void UPathGenerator::RearrangeMainPath(UGrid ArrayHilbertGrid[SIZE][SIZE])
 
 	if ((MainIndex + 1) > (SIZE * SIZE - CurrentDisabledGridOrder))
 	{
-		AddHiddenPath(ArrayHiddenPath, ArrayHilbertPath[CurrentDisabledGridOrder]);
+		AddHiddenPath(ArrayHilbertPath[CurrentDisabledGridOrder]);
 		RecalculateMainPath(ArrayMainPath[0]);
 	}
 	else
 	{
-		AddHiddenPath(ArrayHiddenPath, ArrayMainPath[0]);
+		AddHiddenPath(ArrayMainPath[0]);
 		RecalculateMainPath(ArrayHilbertPath[CurrentDisabledGridOrder]);
 	}
 }
@@ -571,7 +551,7 @@ int8 UPathGenerator::ConnectAvailableGrid(UGrid* CheckedGrid, UGrid ArrayHilbert
 		if (!Grid1)
 		{
 			CheckedGrid->PreviousGrid = nullptr;
-			AddHiddenPath(ArrayHiddenPath, CheckedGrid);
+			AddHiddenPath(CheckedGrid);
 
 			return -1;
 		}
