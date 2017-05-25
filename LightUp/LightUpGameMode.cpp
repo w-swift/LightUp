@@ -17,3 +17,8 @@ ALightUpGameMode::ALightUpGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 }
+
+void ALightUpGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+}

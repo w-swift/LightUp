@@ -3,13 +3,10 @@
 #include "LightUp.h"
 #include "PathGenerator.h"
 
-#define LEVEL 3
-#define SIZE 8
-
 UPathGenerator::UPathGenerator()
 {
 	Seed = UINT32_MAX;
-
+	
 	BaseDirection = EDirection::DE_UP;
 
 	CurrentGridIndexX = -1;
@@ -45,27 +42,26 @@ UPathGenerator::UPathGenerator(const uint32 & InSeed)
 
 void UPathGenerator::GeneratePath()
 {
-	UGrid ArrayHilbertGrid[SIZE][SIZE];
-
 	for (int8 i = 0; i < SIZE; i++)
 		for (int8 j = 0; j < SIZE; j++)
 		{
-			ArrayHilbertGrid[i][j].GridIndexY = i;
-			ArrayHilbertGrid[i][j].GridIndexX = j;
+			ArrayHilbertGrid[i][j] = new UGrid();
+			ArrayHilbertGrid[i][j]->GridIndexY = i;
+			ArrayHilbertGrid[i][j]->GridIndexX = j;
 			///////////////////////////////////////////////////////Calculate the center location of the room.
 		}
 
 	GenerateStartingGrid(SIZE);
 
-	GenerateHilbertCurve(ArrayHilbertGrid, LEVEL, BaseDirection);
+	GenerateHilbertCurve(LEVEL, BaseDirection);
 
 	// Generate the original array of hilbert curve. Initialize the ArrayMainPath equal to ArrayHilbertPath.
 	for (int8 i = 0; i < SIZE; i++)
 		for (int8 j = 0; j < SIZE; j++)
 		{
-			ArrayHilbertPath.Add(&ArrayHilbertGrid[i][j]);
+			ArrayHilbertPath.Add(ArrayHilbertGrid[i][j]);
 			ArrayHilbertPath[i][j].HilbertIndex = i * SIZE + j;
-			ArrayMainPath.Add(&ArrayHilbertGrid[i][j]);
+			ArrayMainPath.Add(ArrayHilbertGrid[i][j]);
 		}
 
 	///////////////////////////////////////////////////////////////////Log Begin
@@ -95,8 +91,8 @@ void UPathGenerator::GeneratePath()
 			if (ArrayHilbertPath[CurrentDisabledGridOrder]->NextGrid)
 				ArrayHilbertPath[CurrentDisabledGridOrder]->NextGrid->PreviousGrid = nullptr;
 
-			RearrangeDisabledGrid(ArrayHilbertGrid);
-			RearrangeMainPath(ArrayHilbertGrid);
+			RearrangeDisabledGrid();
+			RearrangeMainPath();
 			break;
 
 			// Current disabled grid is the first grid of the ArrayMainPath.
@@ -151,31 +147,31 @@ void UPathGenerator::GenerateStartingGrid(uint8 Size)
 	}
 }
 
-void UPathGenerator::GenerateHilbertCurve(UGrid ArrayHilbertGrid[8][8], uint8 Level, EDirection Direction)
+void UPathGenerator::GenerateHilbertCurve(uint8 Level, EDirection Direction)
 {
 	if (Level == 1)
 	{
 		switch (Direction)
 		{
 		case EDirection::DE_LEFT:
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_LEFT);
 			break;
 		case EDirection::DE_RIGHT:
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_RIGHT);
 			break;
 		case EDirection::DE_UP:
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_UP);
 			break;
 		case EDirection::DE_DOWN:
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_DOWN);
 			break;
 		}
 	}
@@ -183,66 +179,66 @@ void UPathGenerator::GenerateHilbertCurve(UGrid ArrayHilbertGrid[8][8], uint8 Le
 		switch (Direction)
 		{
 		case EDirection::DE_LEFT:
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_UP);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_LEFT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_LEFT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_DOWN);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_RIGHT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_DOWN);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_LEFT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_DOWN);
 			break;
 		case EDirection::DE_RIGHT:
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_DOWN);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_RIGHT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_RIGHT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_UP);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_LEFT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_UP);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_RIGHT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_UP);
 			break;
 		case EDirection::DE_UP:
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_LEFT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_UP);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_RIGHT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_UP);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_RIGHT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_LEFT);
+			ConnectHilbert(EDirection::DE_DOWN);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_RIGHT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_UP);
+			ConnectHilbert(EDirection::DE_UP);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_RIGHT);
 			break;
 		case EDirection::DE_DOWN:
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_RIGHT);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_UP);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_DOWN);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_LEFT);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_DOWN);
-			ConnectHilbert(ArrayHilbertGrid, EDirection::DE_DOWN);
-			GenerateHilbertCurve(ArrayHilbertGrid, Level - 1, EDirection::DE_LEFT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_RIGHT);
+			ConnectHilbert(EDirection::DE_UP);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_LEFT);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_DOWN);
+			ConnectHilbert(EDirection::DE_DOWN);
+			GenerateHilbertCurve(Level - 1, EDirection::DE_LEFT);
 			break;
 		}
 }
 
-void UPathGenerator::ConnectHilbert(UGrid ArrayHilbertGrid[SIZE][SIZE], EDirection Direction)
+void UPathGenerator::ConnectHilbert(EDirection Direction)
 {
 	switch (Direction)
 	{
 	case EDirection::DE_LEFT:
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX].NextGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX - 1];
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX - 1].PreviousGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX]->NextGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX - 1];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX - 1]->PreviousGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
 		CurrentGridIndexX -= 1;
 		break;
 	case EDirection::DE_RIGHT:
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX].NextGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX + 1];
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX + 1].PreviousGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX]->NextGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX + 1];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX + 1]->PreviousGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
 		CurrentGridIndexX += 1;
 		break;
 	case EDirection::DE_UP:
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX].NextGrid = &ArrayHilbertGrid[CurrentGridIndexY + 1][CurrentGridIndexX];
-		ArrayHilbertGrid[CurrentGridIndexY + 1][CurrentGridIndexX].PreviousGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX]->NextGrid = ArrayHilbertGrid[CurrentGridIndexY + 1][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY + 1][CurrentGridIndexX]->PreviousGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
 		CurrentGridIndexY += 1;
 		break;
 	case EDirection::DE_DOWN:
-		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX].NextGrid = &ArrayHilbertGrid[CurrentGridIndexY - 1][CurrentGridIndexX];
-		ArrayHilbertGrid[CurrentGridIndexY - 1][CurrentGridIndexX].PreviousGrid = &ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX]->NextGrid = ArrayHilbertGrid[CurrentGridIndexY - 1][CurrentGridIndexX];
+		ArrayHilbertGrid[CurrentGridIndexY - 1][CurrentGridIndexX]->PreviousGrid = ArrayHilbertGrid[CurrentGridIndexY][CurrentGridIndexX];
 		CurrentGridIndexY -= 1;
 		break;
 	}
@@ -324,7 +320,7 @@ void UPathGenerator::SeperateHiddenPath()
 	CurrentDisabledGridOrder++;
 }
 
-void UPathGenerator::RearrangeDisabledGrid(UGrid ArrayHilbertGrid[SIZE][SIZE])
+void UPathGenerator::RearrangeDisabledGrid()
 {
 	UGrid* SpecialGrid;
 
@@ -337,7 +333,7 @@ void UPathGenerator::RearrangeDisabledGrid(UGrid ArrayHilbertGrid[SIZE][SIZE])
 
 	// If CurrentDisabledGrid has a cross grid, check its neighbour grid which is valid and located at the higher order in ArrayHilbertPath.
 	if ((SpecialGrid = ArrayHilbertPath[CurrentDisabledGridOrder]->CrossGrid) != nullptr)
-		ConnectAvailableGrid(SpecialGrid, ArrayHilbertGrid, false);
+		ConnectAvailableGrid(SpecialGrid, false);
 }
 
 void UPathGenerator::AddHiddenPath(UGrid* HiddenGrid)
@@ -382,7 +378,7 @@ void UPathGenerator::InversePathOrder(UGrid* FirstGrid)
 	}
 }
 
-void UPathGenerator::RearrangeMainPath(UGrid ArrayHilbertGrid[SIZE][SIZE])
+void UPathGenerator::RearrangeMainPath()
 {
 	// Previous grid of current disabled grid.
 	UGrid* PreGrid = ArrayHilbertPath[CurrentDisabledGridOrder]->PreviousGrid;
@@ -398,7 +394,7 @@ void UPathGenerator::RearrangeMainPath(UGrid ArrayHilbertGrid[SIZE][SIZE])
 		// If PreGrid have no cross grid. Check PreGrid.
 		if (!TempCrossGrid)
 		{
-			if ((TempOrder = ConnectAvailableGrid(PreGrid, ArrayHilbertGrid, true)) != -1)
+			if ((TempOrder = ConnectAvailableGrid(PreGrid, true)) != -1)
 				CurrentDisabledGridOrder = TempOrder;
 		}
 
@@ -407,7 +403,7 @@ void UPathGenerator::RearrangeMainPath(UGrid ArrayHilbertGrid[SIZE][SIZE])
 		{
 			do
 			{
-				if ((TempOrder = ConnectAvailableGrid(TempCrossGrid, ArrayHilbertGrid, true)) != -1)
+				if ((TempOrder = ConnectAvailableGrid(TempCrossGrid, true)) != -1)
 				{
 					CurrentDisabledGridOrder = TempOrder;
 					break;
@@ -446,7 +442,7 @@ void UPathGenerator::RearrangeMainPath(UGrid ArrayHilbertGrid[SIZE][SIZE])
 	}
 }
 
-int8 UPathGenerator::ConnectAvailableGrid(UGrid* CheckedGrid, UGrid ArrayHilbertGrid[SIZE][SIZE], bool bIsRearrangePath)
+int8 UPathGenerator::ConnectAvailableGrid(UGrid* CheckedGrid, bool bIsRearrangePath)
 {
 	// Stored available grid.
 	UGrid* TempGrid = nullptr;

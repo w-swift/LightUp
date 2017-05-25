@@ -2,6 +2,9 @@
 
 #pragma once
 
+#define LEVEL 3
+#define SIZE 8
+
 #include "Grid.h"
 #include "UObject/NoExportTypes.h"
 #include "PathGenerator.generated.h"
@@ -27,9 +30,10 @@ class LIGHTUP_API UPathGenerator : public UObject
 	GENERATED_BODY()
 	
 public:
+	/** Default Constructor. */
 	UPathGenerator();
 
-	/** Constructor with given seed. **/
+	/** Constructor with given seed. */
 	UPathGenerator(const uint32 & InSeed);
 
 	/** Return original hilbert path. **/
@@ -53,18 +57,16 @@ private:
 
 	/**
 	* Main recursive function to draw Hilbert Curve.
-	* @param ArrayHilbertPath Handle the reference of grid array.
 	* @param Level The level of the Hilbert Curve. Power of 2.
 	* @param Direction The direction which the U Shape is facing to.
 	*/
-	void GenerateHilbertCurve(UGrid ArrayHilbertGrid[8][8], uint8 Level, EDirection Direction);
+	void GenerateHilbertCurve(uint8 Level, EDirection Direction);
 
 	/**
 	* Handle connection of each single line to generate the origin Hilbert Curve.
-	* @param ArrayHilbertGrid Handle the reference of grid array.
 	* @param Direction The direction of the line goes, also used to figure out where the other grid is.
 	*/
-	void ConnectHilbert(UGrid ArrayHilbertGrid[8][8], EDirection Direction);
+	void ConnectHilbert(EDirection Direction);
 
 	/**
 	* Decide the next disabled grid. Return the order from last starting grid.
@@ -84,11 +86,8 @@ private:
 	/** Seperate the hidden path into two hidden path when current disabled grid is in hidden path. And change the CurrentDisabledGridOrder. */
 	void SeperateHiddenPath();
 
-	/**
-	* Check whether the current disable grid has cross grid or isolate grid and rearrange the path.
-	* @param ArrayHilbertGrid The array to find the neighbour grid.
-	*/
-	void RearrangeDisabledGrid(UGrid ArrayHilbertGrid[8][8]);
+	/** Check whether the current disable grid has cross grid or isolate grid and rearrange the path. */
+	void RearrangeDisabledGrid();
 
 	/**
 	* Add given grid to ArrayHiddenPath, and set the bIsHidden of followed grids to true.
@@ -101,21 +100,17 @@ private:
 	*/
 	void InversePathOrder(UGrid* FirstGrid);
 
-	/**
-	* Rearrange and connect the main path when a grid has been disabled.
-	* @param ArrayHilbertGrid The array to find the neighbour grid.
-	*/
-	void RearrangeMainPath(UGrid ArrayHilbertGrid[8][8]);
+	/** Rearrange and connect the main path when a grid has been disabled. */
+	void RearrangeMainPath();
 
 	/**
 	* Check neighbour grid of given grid and find the available grid to connect, which should have higher index in ArrayMainPath. If rearrange main path, the distance between two grid must be lower than 1/4 of current length of ArrayHilbertPath.
 	* @param CheckedGrid The grid to be checked.
-	* @param ArrayHilbertGrid The array to find the neighbour grid.
 	* @param bIsRearrangePath Whether dealed with path or not. If true, the distance should be a control element, otherwise(which means dealing with disabled grid), only find the available grid with higher index.
 	* @return -1: When not find grid to connect.
 	* @retrun >=0: The HilbertIndex of the grid to connect.
 	*/
-	int8 ConnectAvailableGrid(UGrid* CheckedGrid, UGrid ArayHilbertGrid[8][8], bool bIsRearrangePath);
+	int8 ConnectAvailableGrid(UGrid* CheckedGrid, bool bIsRearrangePath);
 
 	/**
 	* Each time after disable a grid, recalculate ArrayMainPath.
@@ -124,8 +119,24 @@ private:
 	void RecalculateMainPath(UGrid* FirstGrid);
 
 public:
+	/** Original grid array. */
+	UGrid* ArrayHilbertGrid[SIZE][SIZE];
+
+protected:
 	/** Use seed to generate random path. Can be changed by LevelGameMode. */
 	uint32 Seed;
+
+	/** Original hilbert path. */
+	UPROPERTY()
+	TArray<UGrid*> ArrayHilbertPath;
+
+	/** The main path of rearranged ArrayHilbertPath.(Not include the cross path, which can be got from the CrossGridIndex) */
+	UPROPERTY()
+	TArray<UGrid*> ArrayMainPath;
+
+	/** All hidden path of rearranged ArrayHilbertPath. Just contain the first grid index of each hidden path. */
+	UPROPERTY()
+	TArray<UGrid*> ArrayHiddenPath;
 
 private:
 	/** The orientation of the base U shape face to. */
@@ -142,16 +153,4 @@ private:
 
 	/** Count the total number of disabled grids. */
 	uint8 DisabledGridCounter;
-
-	/** Original hilbert path. */
-	UPROPERTY()
-	TArray<UGrid*> ArrayHilbertPath;
-
-	/** The main path of rearranged ArrayHilbertPath.(Not include the cross path, which can be got from the CrossGridIndex) */
-	UPROPERTY()
-	TArray<UGrid*> ArrayMainPath;
-
-	/** All hidden path of rearranged ArrayHilbertPath. Just contain the first grid index of each hidden path. */
-	UPROPERTY()
-	TArray<UGrid*> ArrayHiddenPath;
 };

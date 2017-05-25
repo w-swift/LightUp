@@ -20,42 +20,41 @@ public:
 	* @param ArrayHilbertGrid The Array to handle with.
 	* @param Size Tell where the edge is.
 	*/
-	UGrid* GetUpGrid(UGrid ArrayHilbertGrid[8][8], uint8 Size);
+	UGrid* GetUpGrid(UGrid* ArrayHilbertGrid[8][8], uint8 Size);
 
 	/**
 	* Get the down grid of giving grid. Return nullptr when it is no valid.
 	* @param ArrayHilbertGrid The Array to handle with.
 	* @param Size Tell where the edge is.
 	*/
-	UGrid* GetDownGrid(UGrid ArrayHilbertGrid[8][8], uint8 Size);
+	UGrid* GetDownGrid(UGrid* ArrayHilbertGrid[8][8], uint8 Size);
 
 	/**
 	* Get the left grid of giving grid. Return nullptr when it is no valid.
 	* @param ArrayHilbertGrid The Array to handle with.
 	* @param Size Tell where the edge is.
 	*/
-	UGrid* GetLeftGrid(UGrid ArrayHilbertGrid[8][8], uint8 Size);
+	UGrid* GetLeftGrid(UGrid* ArrayHilbertGrid[8][8], uint8 Size);
 
 	/**
 	* Get the right grid of giving grid. Return nullptr when it is no valid.
 	* @param ArrayHilbertGrid The Array to handle with.
 	* @param Size Tell where the edge is.
 	*/
-	UGrid* GetRightGrid(UGrid ArrayHilbertGrid[8][8], uint8 Size);
+	UGrid* GetRightGrid(UGrid* ArrayHilbertGrid[8][8], uint8 Size);
 
 
 public:
 	/** The center location of a grid, used to spawn rooms later. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
 	FVector GridCenterLocation;
 
 	/** Whether the grid is in hidden room. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
-	uint8 bIsValid:1;
+	uint8 bIsValid : 1;
 
 	/** Whether the grid is in hidden room. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Room)
-	uint8 bIsHidden:1;
+	uint8 bIsHidden : 1;
 
 	/** The X index in the original hilbert curve. */
 	int8 GridIndexX;
